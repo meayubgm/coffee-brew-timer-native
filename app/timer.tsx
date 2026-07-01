@@ -23,6 +23,9 @@ export default function TimerScreen() {
   useEffect(() => {
     if (alarm) {
       playBeep();
+      // 5秒経過で自動的にオーバーレイを閉じる
+      const timer = setTimeout(dismissAlarm, 5000);
+      return () => clearTimeout(timer);
     }
   }, [alarm]);
 
@@ -213,7 +216,7 @@ export default function TimerScreen() {
           className="flex-1 bg-coffee-bg/90 items-center justify-center px-8"
           onPress={dismissAlarm}
         >
-          <Pressable>
+          <View pointerEvents="none">
             <View className="bg-coffee-surface border border-coffee-accent rounded-2xl p-8 w-full items-center">
               <Text className="text-5xl mb-4">🔔</Text>
               <Text className="text-2xl font-bold text-coffee-accent mb-1">{alarm?.step.label}</Text>
@@ -245,7 +248,7 @@ export default function TimerScreen() {
               )}
               <Text className="text-coffee-muted text-xs mt-6">タップして閉じる</Text>
             </View>
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
     </SafeAreaView>
