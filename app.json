@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Coffee Brew Timer",
+    "slug": "coffee-brew-timer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "coffeebrewtimer",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.coffeebrewtimer"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0e0b08"
+      },
+      "package": "com.coffeebrewtimer"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  テラコッタ・テーマのトークン定義（ライト = 既定 / ダーク = .dark）
+  値は "R G B"（スペース区切り）。tailwind 側の
+  rgb(var(--token) / <alpha-value>) が透明度付きで解決するので
+  bg-coffee-accent/10 のような alpha 付きクラスもそのまま効く。
+*/
+@layer base {
+  :root {
+    /* ── LIGHT（生成りのクリーム × 素焼きテラコッタ）── */
+    --coffee-bg:           247 236 229; /* #f7ece5 */
+    --coffee-surface:      255 252 249; /* #fffcf9 */
+    --coffee-border:       237 220 209; /* #eddcd1 */
+    --coffee-text:          48  29  21; /* #301d15 */
+    --coffee-muted:        156 128 116; /* #9c8074 */
+    --coffee-accent:       181  81  47; /* #b5512f */
+    --coffee-accent-dark:  147  63  36; /* #933f24 */
+    --coffee-accent-light: 212 115  77; /* #d4734d */
+    --coffee-on-accent:    255 255 255; /* #ffffff */
+  }
+
+  .dark:root,
+  :root.dark {
+    /* ── DARK（深煎りの焙煎色 × 血色のテラコッタ）── */
+    --coffee-bg:            18  12  10; /* #120c0a */
+    --coffee-surface:       32  21  17; /* #201511 */
+    --coffee-border:        52  34  28; /* #34221c */
+    --coffee-text:         236 224 216; /* #ece0d8 */
+    --coffee-muted:        156 133 121; /* #9c8579 */
+    --coffee-accent:       204 106  69; /* #cc6a45 */
+    --coffee-accent-dark:  164  80  47; /* #a4502f */
+    --coffee-accent-light: 226 139 101; /* #e28b65 */
+    --coffee-on-accent:    255 255 255; /* #ffffff */
+  }
+}
