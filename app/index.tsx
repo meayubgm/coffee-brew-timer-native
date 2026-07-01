@@ -278,7 +278,7 @@ function Stepper({
           value={String(value)}
           onChangeText={onChangeText}
           keyboardType="numeric"
-          style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}
+          style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', minWidth: 0 }}
           className="flex-1 bg-coffee-bg border border-coffee-border rounded-lg px-3 py-2 text-center text-lg text-coffee-text"
         />
         <TouchableOpacity
