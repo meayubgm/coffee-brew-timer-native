@@ -107,3 +107,45 @@ npx expo install react-native-web react-dom @expo/metro-runtime
 **原因:** PCとAndroid端末が別ネットワークに接続されていた。
 
 **対処:** `make start-tunnel` でトンネルモード起動 → 解決。同じ Wi-Fi 環境では `make start-c` を使うこと。
+
+---
+
+### 9. ThemeToggle を設定画面に組み込み
+
+- `src/components/ThemeToggle.tsx` のインポートパスの誤りを修正（claudeDesign バグ）
+  - `'../src/theme/ThemeContext'` → `'../theme/ThemeContext'`
+- `app/settings.tsx`（旧 presets.tsx）の ScrollView 末尾に「設定」セクションとして `ThemeToggle` を追加
+- HomeScreen のボタン・PresetsScreen のヘッダー文言を「プリセット管理」→「設定」に変更
+
+---
+
+### 10. PresetsScreen → SettingScreen にリネーム
+
+プリセット以外の設定（テーマ切替）も含む画面になったため名称を変更。
+
+| 変更前 | 変更後 |
+|---|---|
+| `app/presets.tsx` | `app/settings.tsx` |
+| `PresetsScreen` | `SettingScreen` |
+| `router.push('/presets')` | `router.push('/settings')` |
+
+> `presetStore.ts` のストレージキー（`'coffee-custom-presets'`）はユーザーデータに関わるため変更なし。
+
+---
+
+### 11. Stepper の数値入力が Section からはみ出る問題を修正
+
+**原因:** `TextInput` が `minWidth` の制約を持たず、`flex-1` コンテナ内で縮小しきれなかった。
+
+**対処:** `TextInput` の `style` に `minWidth: 0` を追加。
+
+---
+
+### 12. アラームオーバーレイのタップ挙動と自動クローズを修正
+
+**問題1:** オーバーレイカード自身をタップしても閉じない。
+- **原因:** 内側の `Pressable` がタップイベントを吸収していた。
+- **対処:** 内側の `Pressable` を `View pointerEvents="none"` に変更し、外側の `Pressable`（`dismissAlarm`）にイベントが届くようにした。
+
+**問題2:** タップしないと永続表示される。
+- **対処:** alarm 表示時に `setTimeout(dismissAlarm, 5000)` を設定し、5秒で自動クローズ。手動で閉じた場合や次のアラームが来た場合は `clearTimeout` でクリーンアップ。

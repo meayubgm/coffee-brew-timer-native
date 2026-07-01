@@ -1,5 +1,5 @@
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Haptics from 'expo-haptics';
 
 // 880Hz サイン波 WAV を base64 文字列で生成する
@@ -60,16 +60,28 @@ async function ensureAudioFile(): Promise<string> {
   return path;
 }
 
+// アプリ起動時にオーディオモードを一度だけ設定する
+let _audioModeReady = false;
+async function ensureAudioMode(): Promise<void> {
+  if (_audioModeReady) return;
+  await setAudioModeAsync({ playsInSilentModeIOS: true });
+  _audioModeReady = true;
+}
+
 export async function playBeep(): Promise<void> {
+  // ハプティクスは常に試みる（音声失敗時のフォールバック）
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
 
+  // オーディオモード設定（失敗しても再生は試みる）
+  ensureAudioMode().catch(() => {});
+
   try {
-    await setAudioModeAsync({ playsInSilentModeIOS: true });
     const uri = await ensureAudioFile();
-    const player = createAudioPlayer({ uri });
+    // URIは文字列で渡す（オブジェクト形式は環境依存）
+    const player = createAudioPlayer(uri);
     player.play();
     setTimeout(() => player.remove(), 2000);
-  } catch (_e) {
-    // 音声再生失敗時はハプティクスのみ
+  } catch (e) {
+    console.error('[playBeep] 音声再生エラー:', e);
   }
 }
