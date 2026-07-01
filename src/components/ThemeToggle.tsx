@@ -2,7 +2,7 @@
 // 既存の className 規約（bg-coffee-* / text-coffee-*）だけで作れる。
 
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme, type ThemePref } from '../src/theme/ThemeContext';
+import { useTheme, type ThemePref } from '../theme/ThemeContext';
 
 const OPTIONS: { key: ThemePref; label: string; icon: string }[] = [
   { key: 'light', label: 'ライト', icon: '☀' },

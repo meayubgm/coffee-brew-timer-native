@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePresetStore } from '../src/stores/presetStore';
 import { BrewPreset, BrewStep } from '../src/types/preset';
+import { ThemeToggle } from '../src/components/ThemeToggle';
 
 type EditingStep = {
   id: string;
@@ -110,7 +111,7 @@ export default function PresetsScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Text className="text-coffee-muted">← 戻る</Text>
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-lg font-medium text-coffee-text">プリセット管理</Text>
+        <Text className="flex-1 text-center text-lg font-medium text-coffee-text">設定</Text>
         <TouchableOpacity onPress={openNew}>
           <Text className="text-coffee-accent font-medium">＋ 新規</Text>
         </TouchableOpacity>
@@ -170,6 +171,12 @@ export default function PresetsScreen() {
             ))}
           </View>
         )}
+
+        {/* その他の設定 */}
+        <View className="mb-8 mt-2">
+          <Text className="text-xs uppercase tracking-widest text-coffee-muted mb-3">その他の設定</Text>
+          <ThemeToggle />
+        </View>
       </ScrollView>
 
       {/* 編集モーダル */}

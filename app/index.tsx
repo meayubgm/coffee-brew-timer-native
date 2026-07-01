@@ -42,7 +42,7 @@ export default function HomeScreen() {
       <View className="flex-row items-center justify-between px-6 pt-4 pb-3">
         <Text className="text-2xl font-bold text-coffee-accent">☕ Coffee Timer</Text>
         <TouchableOpacity onPress={() => router.push('/presets')}>
-          <Text className="text-sm text-coffee-muted">プリセット管理</Text>
+          <Text className="text-sm text-coffee-muted">設定</Text>
         </TouchableOpacity>
       </View>
 
