@@ -2,6 +2,16 @@ import { create } from 'zustand';
 import * as KeepAwake from 'expo-keep-awake';
 import { BrewStep } from '../types/preset';
 
+// Webでは wake lock が未アクティブのまま解除するとrejectされる（HTTP環境や
+// ブラウザ非対応時など）。スリープ抑制は補助機能なので失敗は握りつぶす。
+function activateKeepAwake(): void {
+  Promise.resolve(KeepAwake.activateKeepAwakeAsync()).catch(() => {});
+}
+
+function deactivateKeepAwake(): void {
+  Promise.resolve(KeepAwake.deactivateKeepAwake()).catch(() => {});
+}
+
 type AlarmInfo = {
   step: BrewStep;
   nextStep: BrewStep | null;
@@ -34,7 +44,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     if (intervalId) {
       clearInterval(intervalId);
     }
-    KeepAwake.activateKeepAwakeAsync();
+    activateKeepAwake();
 
     const firstAlarm: AlarmInfo = {
       step: steps[0],
@@ -59,7 +69,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     if (intervalId) {
       clearInterval(intervalId);
     }
-    KeepAwake.deactivateKeepAwake();
+    deactivateKeepAwake();
     set({ isRunning: false, intervalId: null });
   },
 
@@ -68,7 +78,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     if (intervalId) {
       clearInterval(intervalId);
     }
-    KeepAwake.activateKeepAwakeAsync();
+    activateKeepAwake();
     const id = setInterval(() => {
       get().tick(steps);
     }, 100);
@@ -80,7 +90,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     if (intervalId) {
       clearInterval(intervalId);
     }
-    KeepAwake.deactivateKeepAwake();
+    deactivateKeepAwake();
     set({
       elapsed: 0,
       isRunning: false,
@@ -104,7 +114,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       if (intervalId) {
         clearInterval(intervalId);
       }
-      KeepAwake.deactivateKeepAwake();
+      deactivateKeepAwake();
       set({ elapsed: newElapsed, isRunning: false, intervalId: null });
       return;
     }

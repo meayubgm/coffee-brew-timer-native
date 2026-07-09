@@ -1,6 +1,40 @@
+import { Platform } from 'react-native';
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Haptics from 'expo-haptics';
+
+// ── Web: Web Audio API でビープを直接合成する ────────────────
+// expo-file-system は Web 非対応のため、ファイル経由を使わない
+let _webAudioCtx: AudioContext | null = null;
+
+function playBeepWeb(): void {
+  const AudioCtx =
+    (globalThis as any).AudioContext ?? (globalThis as any).webkitAudioContext;
+  if (!AudioCtx) {
+    return;
+  }
+  if (!_webAudioCtx) {
+    _webAudioCtx = new AudioCtx();
+  }
+  const ctx = _webAudioCtx!;
+  // 自動再生ポリシーで suspended になっている場合は再開を試みる
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = 880;
+  const now = ctx.currentTime;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.5, now + 0.01);
+  gain.gain.setValueAtTime(0.5, now + 0.35);
+  gain.gain.linearRampToValueAtTime(0, now + 0.4);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.4);
+}
 
 // 880Hz サイン波 WAV を base64 文字列で生成する
 function createBeepBase64(): string {
@@ -64,11 +98,21 @@ async function ensureAudioFile(): Promise<string> {
 let _audioModeReady = false;
 async function ensureAudioMode(): Promise<void> {
   if (_audioModeReady) return;
-  await setAudioModeAsync({ playsInSilentModeIOS: true });
+  await setAudioModeAsync({ playsInSilentMode: true });
   _audioModeReady = true;
 }
 
 export async function playBeep(): Promise<void> {
+  // Web は Web Audio API で直接鳴らす（expo-file-system / expo-haptics 非対応のため）
+  if (Platform.OS === 'web') {
+    try {
+      playBeepWeb();
+    } catch (e) {
+      console.error('[playBeep] 音声再生エラー(web):', e);
+    }
+    return;
+  }
+
   // ハプティクスは常に試みる（音声失敗時のフォールバック）
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
 
