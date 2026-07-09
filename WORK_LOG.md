@@ -149,3 +149,28 @@ npx expo install react-native-web react-dom @expo/metro-runtime
 
 **問題2:** タップしないと永続表示される。
 - **対処:** alarm 表示時に `setTimeout(dismissAlarm, 5000)` を設定し、5秒で自動クローズ。手動で閉じた場合や次のアラームが来た場合は `clearTimeout` でクリーンアップ。
+
+---
+
+### 13. ビープ音が再生されない問題を修正（ネイティブ）
+
+**原因:** `expo-file-system` の `writeAsStringAsync` が Expo SDK 56 で deprecated になり、エラーで再生が中断していた。
+
+**対処:**
+- `src/utils/sound.ts` のインポートを `expo-file-system` → `expo-file-system/legacy` に変更。
+- 併せて広い try-catch を整理し、`setAudioModeAsync` の失敗が再生をブロックしないよう `ensureAudioMode()` に分離。
+
+---
+
+### 14. Web版の音声再生と keep-awake のエラーを修正
+
+**問題1:** Web で音声再生エラー。
+- **エラー:** `UnavailabilityError: The method or property expo-file-system.writeAsStringAsync is not available on web`
+- **原因:** `expo-file-system` は Web 非対応。WAV をキャッシュに書き出す方式が Web では成立しない。
+- **対処:** `Platform.OS === 'web'` の場合は Web Audio API（`AudioContext` + `OscillatorNode`）で 880Hz サイン波を直接合成して再生する分岐を追加。ファイル書き込み・`expo-audio`・`expo-haptics` はネイティブ側だけで呼ぶ。自動再生ポリシー対策として `suspended` 時は `resume()` を試みる。
+- 併せて `setAudioModeAsync` のプロパティ名誤りを修正（`playsInSilentModeIOS` → `playsInSilentMode`）。
+
+**問題2:** タイマー画面で「戻る」「リセット」押下時に Uncaught エラー。
+- **エラー:** `CodedError: The wake lock with tag ExpoKeepAwakeDefaultTag has not activated yet`
+- **原因:** Web の `expo-keep-awake` は Screen Wake Lock API を使う。wake lock が未アクティブの状態で `deactivateKeepAwake()` を呼ぶと Promise が reject される。
+- **対処:** `src/stores/timerStore.ts` で activate / deactivate を `.catch(() => {})` で失敗を握りつぶすラッパー関数に包み、全 5 箇所の呼び出しをラッパー経由に変更。スリープ抑制は補助機能なので失敗してもタイマー動作に影響させない。
