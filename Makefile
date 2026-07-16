@@ -1,7 +1,7 @@
 start:
 	npx expo start
 
-start-c:
+restart:
 	npx expo start --go --clear
 
 start-tunnel:
