@@ -105,7 +105,7 @@ export default function TimerScreen() {
               {currentStep.pourAmount > 0 && (
                 <View className="items-end">
                   <Text
-                    className="text-3xl font-bold text-coffee-accent"
+                    className="text-3xl font-bold text-coffee-accent pb-3"
                     style={{ fontFamily: MONO_FONT_FAMILY }}
                   >
                     {currentStep.cumulativeAmount}g
@@ -228,7 +228,7 @@ export default function TimerScreen() {
               {alarm && alarm.step.pourAmount > 0 && (
                 <View className="bg-coffee-bg rounded-xl p-4 mb-4 w-full items-center">
                   <Text
-                    className="text-5xl font-bold text-coffee-accent"
+                    className="text-5xl font-bold text-coffee-accent pb-3"
                     style={{ fontFamily: MONO_FONT_FAMILY }}
                   >
                     {alarm.step.cumulativeAmount}g

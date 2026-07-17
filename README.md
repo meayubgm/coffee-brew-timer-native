@@ -32,6 +32,7 @@ app/
 src/
   components/
     ThemeToggle.tsx  # ライト/ダーク/自動 切替ボタン
+    ui/              # 共通UIコンポーネント（Section/Card/SegmentedControl/Stepper/Field/SummaryItem）
   constants/
     defaultPresets.ts  # デフォルト4プリセットのテンプレート定義
   stores/
