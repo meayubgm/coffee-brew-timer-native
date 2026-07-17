@@ -29,6 +29,9 @@ app/
   timer.tsx          # TimerScreen（カウントアップ・ステップガイド・アラーム）
   settings.tsx       # SettingScreen（プリセット一覧・カスタム作成・編集・外観設定）
 
+public/
+  index.html         # Web版HTMLテンプレート（lang="ja" / noindex メタ。expo export 時に使用）
+
 src/
   components/
     ThemeToggle.tsx  # ライト/ダーク/自動 切替ボタン
