@@ -23,8 +23,6 @@ type ThemeContextValue = {
   /** 実際に適用中の配色（system のときは解決後の light / dark） */
   resolved: 'light' | 'dark';
   setPref: (p: ThemePref) => void;
-  /** light ⇄ dark のワンタップ切替（system は解除される） */
-  toggle: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -61,16 +59,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     [setColorScheme]
   );
 
-  const toggle = useCallback(() => {
-    setPref(colorScheme === 'dark' ? 'light' : 'dark');
-  }, [colorScheme, setPref]);
-
   // ちらつき防止：永続値の読込が終わるまで描画を遅らせたい場合はここで null を返す
   if (!hydrated) return null;
 
   return (
     <ThemeContext.Provider
-      value={{ pref, resolved: colorScheme ?? 'light', setPref, toggle }}
+      value={{ pref, resolved: colorScheme ?? 'light', setPref }}
     >
       {children}
     </ThemeContext.Provider>

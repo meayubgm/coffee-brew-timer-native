@@ -27,7 +27,7 @@ app/
   _layout.tsx        # ルートレイアウト（ThemeProvider / SafeAreaProvider）
   index.tsx          # HomeScreen（メソッド選択・豆量入力・タイマー開始）
   timer.tsx          # TimerScreen（カウントアップ・ステップガイド・アラーム）
-  presets.tsx        # PresetsScreen（プリセット一覧・カスタム作成・編集）
+  settings.tsx       # SettingScreen（プリセット一覧・カスタム作成・編集・外観設定）
 
 src/
   components/

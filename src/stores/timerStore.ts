@@ -32,7 +32,16 @@ type TimerState = {
   tick: (steps: BrewStep[]) => void;
 };
 
-export const useTimerStore = create<TimerState>((set, get) => ({
+export const useTimerStore = create<TimerState>((set, get) => {
+  // 実行中の interval を停止する（各操作で共通利用）
+  function clearTimer(): void {
+    const { intervalId } = get();
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+  }
+
+  return {
   elapsed: 0,
   isRunning: false,
   currentStepIndex: 0,
@@ -40,10 +49,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   intervalId: null,
 
   start: (steps) => {
-    const { intervalId } = get();
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
+    clearTimer();
     activateKeepAwake();
 
     const firstAlarm: AlarmInfo = {
@@ -65,19 +71,13 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   },
 
   pause: () => {
-    const { intervalId } = get();
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
+    clearTimer();
     deactivateKeepAwake();
     set({ isRunning: false, intervalId: null });
   },
 
   resume: (steps) => {
-    const { intervalId } = get();
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
+    clearTimer();
     activateKeepAwake();
     const id = setInterval(() => {
       get().tick(steps);
@@ -86,10 +86,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   },
 
   reset: () => {
-    const { intervalId } = get();
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
+    clearTimer();
     deactivateKeepAwake();
     set({
       elapsed: 0,
@@ -110,10 +107,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     const currentStep = steps[currentStepIndex];
 
     if (!currentStep) {
-      const { intervalId } = get();
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      clearTimer();
       deactivateKeepAwake();
       set({ elapsed: newElapsed, isRunning: false, intervalId: null });
       return;
@@ -133,4 +127,5 @@ export const useTimerStore = create<TimerState>((set, get) => ({
 
     set({ elapsed: newElapsed });
   },
-}));
+  };
+});

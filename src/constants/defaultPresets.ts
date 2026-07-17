@@ -1,4 +1,25 @@
-import { BrewPresetTemplate } from '../types/preset';
+import { BrewPresetTemplate, BrewPresetOptionGroup } from '../types/preset';
+
+// ホット / アイス（湯量半分＋残り半分を氷）の温度選択。複数プリセットで共有する
+const TEMPERATURE_OPTION_GROUP: BrewPresetOptionGroup = {
+  id: 'temperature',
+  label: '温度',
+  description: 'アイスは湯量が半分になり、残り半分が氷になります',
+  defaultOptionId: 'hot',
+  options: [
+    {
+      id: 'hot',
+      label: 'ホット',
+      stepOverrides: {},
+    },
+    {
+      id: 'ice',
+      label: 'アイス',
+      hotWaterRatio: 0.5,
+      stepOverrides: {},
+    },
+  ],
+};
 
 export const DEFAULT_PRESETS: BrewPresetTemplate[] = [
   {
@@ -90,25 +111,7 @@ export const DEFAULT_PRESETS: BrewPresetTemplate[] = [
           },
         ],
       },
-      {
-        id: 'temperature',
-        label: '温度',
-        description: 'アイスは湯量が半分になり、残り半分が氷になります',
-        defaultOptionId: 'hot',
-        options: [
-          {
-            id: 'hot',
-            label: 'ホット',
-            stepOverrides: {},
-          },
-          {
-            id: 'ice',
-            label: 'アイス',
-            hotWaterRatio: 0.5,
-            stepOverrides: {},
-          },
-        ],
-      },
+      TEMPERATURE_OPTION_GROUP,
     ],
   },
   {
@@ -151,27 +154,7 @@ export const DEFAULT_PRESETS: BrewPresetTemplate[] = [
         instruction: 'バルブを開放してカップに落とし切る',
       },
     ],
-    optionGroups: [
-      {
-        id: 'temperature',
-        label: '温度',
-        description: 'アイスは湯量が半分になり、残り半分が氷になります',
-        defaultOptionId: 'hot',
-        options: [
-          {
-            id: 'hot',
-            label: 'ホット',
-            stepOverrides: {},
-          },
-          {
-            id: 'ice',
-            label: 'アイス',
-            hotWaterRatio: 0.5,
-            stepOverrides: {},
-          },
-        ],
-      },
-    ],
+    optionGroups: [TEMPERATURE_OPTION_GROUP],
   },
   {
     id: 'preset-aeropress',

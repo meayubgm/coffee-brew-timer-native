@@ -5,6 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePresetStore } from '../src/stores/presetStore';
 import { BrewPreset, BrewStep } from '../src/types/preset';
 import { ThemeToggle } from '../src/components/ThemeToggle';
+import { useTheme } from '../src/theme/ThemeContext';
+import { THEME_COLORS, SCREEN_CONTAINER } from '../src/theme/colors';
+
+// カスタムプリセットは固定g数で保存する。割合→g換算の基準となる豆量（g）
+const CUSTOM_PRESET_BASE_BEANS = 20;
 
 type EditingStep = {
   id: string;
@@ -26,6 +31,9 @@ type EditingPreset = {
 export default function SettingScreen() {
   const { defaultTemplates, customPresets, addCustomPreset, updateCustomPreset, deleteCustomPreset, duplicateTemplate } =
     usePresetStore();
+
+  const { resolved } = useTheme();
+  const placeholderColor = THEME_COLORS[resolved].placeholder;
 
   const [editing, setEditing] = useState<EditingPreset | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -73,7 +81,7 @@ export default function SettingScreen() {
       Alert.alert('エラー', 'プリセット名を入力してください');
       return;
     }
-    const totalWater = editing.ratio * 20;
+    const totalWater = editing.ratio * CUSTOM_PRESET_BASE_BEANS;
     let cumulative = 0;
     const steps: BrewStep[] = editing.steps.map((s) => {
       const pourAmount = Math.round(totalWater * s.pourRatio);
@@ -105,7 +113,7 @@ export default function SettingScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 w-full bg-coffee-bg max-w-4xl mx-auto">
+    <SafeAreaView className={SCREEN_CONTAINER}>
       {/* ヘッダー */}
       <View className="flex-row items-center px-6 pt-4 pb-3 gap-4">
         <TouchableOpacity onPress={() => router.back()}>
@@ -191,7 +199,7 @@ export default function SettingScreen() {
       >
         {editing && (
           <View className="flex-1 bg-coffee-border">
-            <SafeAreaView className="flex-1 w-full bg-coffee-bg max-w-4xl mx-auto">
+            <SafeAreaView className={SCREEN_CONTAINER}>
             <View className="flex-row items-center px-6 pt-4 pb-3 gap-4">
               <TouchableOpacity onPress={() => setEditing(null)}>
                 <Text className="text-coffee-muted">キャンセル</Text>
@@ -212,7 +220,7 @@ export default function SettingScreen() {
                     value={editing.name}
                     onChangeText={(v) => setEditing({ ...editing, name: v })}
                     className="w-full bg-coffee-bg border border-coffee-border rounded-lg px-3 py-2 text-coffee-text"
-                    placeholderTextColor="#8a7a6e"
+                    placeholderTextColor={placeholderColor}
                     placeholder="プリセット名"
                   />
                 </Field>
@@ -231,7 +239,7 @@ export default function SettingScreen() {
                     multiline
                     numberOfLines={2}
                     className="w-full bg-coffee-bg border border-coffee-border rounded-lg px-3 py-2 text-coffee-text"
-                    placeholderTextColor="#8a7a6e"
+                    placeholderTextColor={placeholderColor}
                     placeholder="豆の種類・挽き目など"
                   />
                 </Field>
@@ -300,7 +308,7 @@ export default function SettingScreen() {
                         value={step.instruction}
                         onChangeText={(v) => updateStep(step.id, { instruction: v })}
                         className="bg-coffee-bg border border-coffee-border rounded-lg px-2 py-1.5 text-sm text-coffee-text"
-                        placeholderTextColor="#8a7a6e"
+                        placeholderTextColor={placeholderColor}
                         placeholder="例: ゆっくり円を描くように注ぐ"
                       />
                     </View>

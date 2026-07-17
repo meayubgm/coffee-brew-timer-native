@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
 import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTimerStore } from '../src/stores/timerStore';
 import { usePresetStore } from '../src/stores/presetStore';
-import { BrewStep } from '../src/types/preset';
 import { playBeep } from '../src/utils/sound';
+import { fmtTime, MONO_FONT_FAMILY } from '../src/utils/format';
+import { SCREEN_CONTAINER } from '../src/theme/colors';
 
 export default function TimerScreen() {
   const { elapsed, isRunning, currentStepIndex, alarm, start, pause, resume, reset, dismissAlarm } =
@@ -49,7 +49,7 @@ export default function TimerScreen() {
   const stepPct = Math.min((stepElapsed / Math.max(stepDuration, 1)) * 100, 100);
 
   return (
-    <SafeAreaView className="flex-1 w-full bg-coffee-bg max-w-4xl mx-auto">
+    <SafeAreaView className={SCREEN_CONTAINER}>
       {/* ヘッダー */}
       <View className="flex-row items-center px-6 pt-4 pb-3 gap-4">
         <TouchableOpacity onPress={handleReset}>
@@ -64,7 +64,7 @@ export default function TimerScreen() {
         <View className="items-center py-6">
           <Text
             className="text-7xl text-coffee-text font-medium"
-            style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}
+            style={{ fontFamily: MONO_FONT_FAMILY }}
           >
             {fmtTime(elapsed)}
           </Text>
@@ -106,7 +106,7 @@ export default function TimerScreen() {
                 <View className="items-end">
                   <Text
                     className="text-3xl font-bold text-coffee-accent"
-                    style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}
+                    style={{ fontFamily: MONO_FONT_FAMILY }}
                   >
                     {currentStep.cumulativeAmount}g
                   </Text>
@@ -167,7 +167,7 @@ export default function TimerScreen() {
                 >
                   <Text
                     className={`text-xs font-mono ${
-                      isDone ? 'text-coffee-accent' : isCurrent ? 'text-white' : 'text-coffee-muted'
+                      isDone ? 'text-coffee-accent' : isCurrent ? 'text-coffee-on-accent' : 'text-coffee-muted'
                     }`}
                   >
                     {isDone ? '✓' : i + 1}
@@ -197,7 +197,7 @@ export default function TimerScreen() {
               isRunning ? 'bg-coffee-border' : 'bg-coffee-accent'
             }`}
           >
-            <Text className={`font-bold text-lg ${isRunning ? 'text-coffee-text' : 'text-white'}`}>
+            <Text className={`font-bold text-lg ${isRunning ? 'text-coffee-text' : 'text-coffee-on-accent'}`}>
               {isRunning ? '一時停止' : '再開'}
             </Text>
           </TouchableOpacity>
@@ -229,7 +229,7 @@ export default function TimerScreen() {
                 <View className="bg-coffee-bg rounded-xl p-4 mb-4 w-full items-center">
                   <Text
                     className="text-5xl font-bold text-coffee-accent"
-                    style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}
+                    style={{ fontFamily: MONO_FONT_FAMILY }}
                   >
                     {alarm.step.cumulativeAmount}g
                   </Text>
@@ -253,10 +253,4 @@ export default function TimerScreen() {
       </Modal>
     </SafeAreaView>
   );
-}
-
-function fmtTime(secs: number): string {
-  const s = Math.floor(secs);
-  const m = Math.floor(s / 60);
-  return `${m}:${String(s % 60).padStart(2, '0')}`;
 }

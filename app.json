@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "coffeebrewtimer",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
@@ -18,7 +18,8 @@
       "package": "com.coffeebrewtimer"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true

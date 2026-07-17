@@ -4,12 +4,13 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePresetStore } from '../src/stores/presetStore';
 import { calcTotalWater } from '../src/utils/waterCalc';
+import { fmtTime, MONO_FONT_FAMILY } from '../src/utils/format';
+import { SCREEN_CONTAINER } from '../src/theme/colors';
 
 export default function HomeScreen() {
   const {
@@ -37,7 +38,7 @@ export default function HomeScreen() {
   const hotWater = totalWater - iceGrams;
 
   return (
-    <SafeAreaView className="flex-1 w-full bg-coffee-bg max-w-4xl mx-auto">
+    <SafeAreaView className={SCREEN_CONTAINER}>
       {/* ヘッダー */}
       <View className="flex-row items-center justify-between px-6 pt-4 pb-3">
         <Text className="text-2xl font-bold text-coffee-accent">☕ Coffee Timer</Text>
@@ -86,7 +87,7 @@ export default function HomeScreen() {
                   onPress={() => setInputMode(mode)}
                   className={`flex-1 py-2 items-center ${inputMode === mode ? 'bg-coffee-accent' : 'bg-transparent'}`}
                 >
-                  <Text className={`text-sm ${inputMode === mode ? 'text-white font-medium' : 'text-coffee-muted'}`}>
+                  <Text className={`text-sm ${inputMode === mode ? 'text-coffee-on-accent font-medium' : 'text-coffee-muted'}`}>
                     {mode === 'beans' ? '豆量で指定' : '人数で指定'}
                   </Text>
                 </TouchableOpacity>
@@ -158,7 +159,7 @@ export default function HomeScreen() {
                           >
                             <Text
                               className={`text-sm ${
-                                currentOptionId === opt.id ? 'text-white font-medium' : 'text-coffee-muted'
+                                currentOptionId === opt.id ? 'text-coffee-on-accent font-medium' : 'text-coffee-muted'
                               }`}
                             >
                               {opt.label}
@@ -208,7 +209,7 @@ export default function HomeScreen() {
           onPress={() => router.push('/timer')}
           className="bg-coffee-accent rounded-xl py-4 items-center"
         >
-          <Text className="text-white font-bold text-lg">タイマー開始</Text>
+          <Text className="text-coffee-on-accent font-bold text-lg">タイマー開始</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -278,7 +279,7 @@ function Stepper({
           value={String(value)}
           onChangeText={onChangeText}
           keyboardType="numeric"
-          style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', minWidth: 0 }}
+          style={{ fontFamily: MONO_FONT_FAMILY, minWidth: 0 }}
           className="flex-1 bg-coffee-bg border border-coffee-border rounded-lg px-3 py-2 text-center text-lg text-coffee-text"
         />
         <TouchableOpacity
@@ -291,10 +292,4 @@ function Stepper({
       </View>
     </View>
   );
-}
-
-function fmtTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
 }

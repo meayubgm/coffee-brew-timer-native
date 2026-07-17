@@ -4,8 +4,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BrewPreset, BrewPresetTemplate } from '../types/preset';
 import { DEFAULT_PRESETS } from '../constants/defaultPresets';
 import { buildPresetFromTemplate } from '../utils/stepBuilder';
+import { calcBeansFromServings } from '../utils/waterCalc';
 
 const STORAGE_KEY = 'coffee-custom-presets';
+
+// 既存プリセットからカスタム複製を生成する（id 採番・「（コピー）」付与・編集可能化）
+function makeDuplicate(source: BrewPreset): BrewPreset {
+  return {
+    ...source,
+    id: `custom-${Date.now()}`,
+    name: `${source.name}（コピー）`,
+    isDefault: false,
+  };
+}
 
 type PresetStore = {
   defaultTemplates: BrewPresetTemplate[];
@@ -26,7 +37,6 @@ type PresetStore = {
   updateCustomPreset: (preset: BrewPreset) => void;
   deleteCustomPreset: (id: string) => void;
   duplicateTemplate: (templateId: string) => BrewPreset;
-  getAllPresets: () => (BrewPreset | BrewPresetTemplate)[];
 };
 
 export const usePresetStore = create<PresetStore>()(
@@ -52,7 +62,7 @@ export const usePresetStore = create<PresetStore>()(
       },
 
       setBeansGrams: (grams) => set({ beansGrams: grams }),
-      setServings: (count) => set({ servings: count, beansGrams: count * 15 }),
+      setServings: (count) => set({ servings: count, beansGrams: calcBeansFromServings(count) }),
       setInputMode: (mode) => set({ inputMode: mode }),
 
       getBuiltPreset: () => {
@@ -78,34 +88,15 @@ export const usePresetStore = create<PresetStore>()(
       duplicateTemplate: (templateId) => {
         const { defaultTemplates, customPresets, beansGrams, selectedOptionIds } = get();
         const template = defaultTemplates.find((t) => t.id === templateId);
-        if (template) {
-          const newPreset = buildPresetFromTemplate(template, beansGrams, selectedOptionIds[template.id]);
-          const duplicate: BrewPreset = {
-            ...newPreset,
-            id: `custom-${Date.now()}`,
-            name: `${newPreset.name}（コピー）`,
-            isDefault: false,
-          };
-          set((state) => ({ customPresets: [...state.customPresets, duplicate] }));
-          return duplicate;
+        const source = template
+          ? buildPresetFromTemplate(template, beansGrams, selectedOptionIds[template.id])
+          : customPresets.find((p) => p.id === templateId);
+        if (!source) {
+          throw new Error(`Preset ${templateId} not found`);
         }
-        const custom = customPresets.find((p) => p.id === templateId);
-        if (custom) {
-          const duplicate: BrewPreset = {
-            ...custom,
-            id: `custom-${Date.now()}`,
-            name: `${custom.name}（コピー）`,
-            isDefault: false,
-          };
-          set((state) => ({ customPresets: [...state.customPresets, duplicate] }));
-          return duplicate;
-        }
-        throw new Error(`Preset ${templateId} not found`);
-      },
-
-      getAllPresets: () => {
-        const { defaultTemplates, customPresets } = get();
-        return [...defaultTemplates, ...customPresets];
+        const duplicate = makeDuplicate(source);
+        set((state) => ({ customPresets: [...state.customPresets, duplicate] }));
+        return duplicate;
       },
     }),
     {

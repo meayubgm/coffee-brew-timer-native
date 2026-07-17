@@ -10,8 +10,8 @@ Claude Codeはセッション開始時にこのファイルを参照してくだ
 コーヒーの抽出メソッドに応じたステップタイマーアプリ。
 豆の量・人数を入力すると最適な湯量を自動計算し、各ステップのタイミングでアラームを鳴らしながら抽出をガイドする。
 
-**ターゲットプラットフォーム:** iOS / Android（React Native）  
-**MVP方針:** まずWebアプリ（React）でプロトタイプを作成し、動作確認後にReact Nativeへ移植する
+**ターゲットプラットフォーム:** iOS / Android / Web（React Native + Expo、react-native-web で Web も配信）  
+**開発経緯:** Web MVP（React/Vite）でプロトタイプ後、Expo（React Native）へ移植済み。現在は単一の Expo コードベースで iOS / Android / Web を賄う。
 
 ---
 
@@ -19,33 +19,43 @@ Claude Codeはセッション開始時にこのファイルを参照してくだ
 
 | レイヤー | 技術 |
 |---|---|
-| フロントエンド（Web） | React + TypeScript + Vite |
-| フロントエンド（Mobile） | React Native（Expo） |
-| 状態管理 | Zustand |
-| ローカル永続化 | localStorage（Web） / AsyncStorage（Mobile） |
-| スタイリング | Tailwind CSS（Web） / NativeWind（Mobile） |
-| テスト | Vitest + React Testing Library |
+| フレームワーク | React Native（Expo SDK 56） |
+| ルーティング | Expo Router v4（`app/` ディレクトリ） |
+| 状態管理 | Zustand（`persist` ミドルウェアで永続化） |
+| ローカル永続化 | AsyncStorage（Web も含め全プラットフォーム共通） |
+| スタイリング | NativeWind v4（Tailwind CSS 記法・`global.css` の CSS 変数でテーマ管理） |
+| 音声 | Web=Web Audio API / ネイティブ=expo-audio＋動的WAV生成 |
+| テーマ管理 | React Context（light / dark / system、AsyncStorage 永続化） |
+
+> テストランナーは未導入（旧仕様の Vitest は使用していない）。型安全性は `tsc --noEmit` で担保。
 
 ---
 
 ## ディレクトリ構成
 
 ```
+app/                # Expo Router の画面（ファイルベースルーティング）
+  _layout.tsx       # ルートレイアウト（ThemeProvider / SafeAreaProvider）
+  index.tsx         # HomeScreen（メソッド選択・豆量/人数入力・味わいオプション・開始）
+  timer.tsx         # TimerScreen（カウントアップ・ステップガイド・アラーム）
+  settings.tsx      # SettingScreen（プリセット一覧・カスタム作成/編集/複製/削除・外観設定）
+
 src/
-  components/       # 再利用可能なUIコンポーネント
-  screens/          # 画面単位のコンポーネント
-    HomeScreen      # メソッド選択・豆量入力
-    TimerScreen     # タイマー・ステップガイド
-    PresetsScreen   # プリセット管理
+  components/
+    ThemeToggle.tsx # ライト/ダーク/自動 切替
   stores/           # Zustandストア
     timerStore.ts
     presetStore.ts
+  theme/
+    ThemeContext.tsx # テーマ設定管理（AsyncStorage 永続化）
+    colors.ts        # className で扱えない色実値（gutter/placeholder）と共通コンテナクラス
   types/            # TypeScript型定義
-    preset.ts
-    step.ts
-  utils/            # 計算ロジック
+    preset.ts       # BrewStep / BrewPreset / BrewStepTemplate 等を集約
+  utils/            # ロジック・ユーティリティ
     waterCalc.ts    # 湯量計算
-    stepBuilder.ts  # ステップ生成
+    stepBuilder.ts  # テンプレート → BrewPreset 変換（optionGroup オーバーライド）
+    sound.ts        # ビープ音生成・再生
+    format.ts       # 時間整形（fmtTime）・等幅フォント定数
   constants/
     defaultPresets.ts  # デフォルトプリセット定義
 ```
@@ -115,7 +125,7 @@ type BrewPresetTemplate = {
 };
 ```
 
-> **実装メモ:** デフォルトプリセットは `BrewPresetTemplate` として定数定義し、`buildPresetFromTemplate(template, beansGrams, selectedGroupOptionIds?)` で全グループのオーバーライドをマージして `BrewPreset` に変換する。`selectedGroupOptionIds` は `Record<groupId, optionId>`。カスタムプリセットは `BrewPreset`（固定g数）として localStorage に保存する。
+> **実装メモ:** デフォルトプリセットは `BrewPresetTemplate` として定数定義し、`buildPresetFromTemplate(template, beansGrams, selectedGroupOptionIds?)` で全グループのオーバーライドをマージして `BrewPreset` に変換する。`selectedGroupOptionIds` は `Record<groupId, optionId>`。カスタムプリセットは `BrewPreset`（固定g数）として AsyncStorage に保存する。
 
 ---
 
@@ -152,7 +162,19 @@ type BrewPresetTemplate = {
 | 軽め | 2回 | 315g → 450g |
 
 - 各注湯の累計目標は `buildPresetFromTemplate` がビルド時に `instruction` へ動的に付加する
-- 選択中オプションは `presetStore` の `selectedOptionIds`（`Record<presetId, Record<groupId, optionId>>`）で管理し localStorage に永続化
+- 選択中オプションは `presetStore` の `selectedOptionIds`（`Record<presetId, Record<groupId, optionId>>`）で管理し AsyncStorage に永続化
+
+#### 温度（説明: アイスは湯量が半分になり、残り半分が氷になります）
+
+4:6メソッド・浸漬式に共通の温度オプション（`defaultPresets.ts` の `TEMPERATURE_OPTION_GROUP` を共有）。
+
+| 選択肢 | hotWaterRatio | 挙動 |
+|---|---|---|
+| ホット（デフォルト） | 1（未指定） | 総湯量をすべてお湯で注ぐ |
+| アイス | 0.5 | お湯を総湯量の半分にし、残り半分を氷で補う |
+
+- `buildPresetFromTemplate` は `hotWaterRatio` で `effectiveTotalWater = round(totalWater × hotWaterRatio)` を算出し、各ステップの注湯量に反映。氷量 `iceGrams = totalWater − effectiveTotalWater` を（>0 のときのみ）`BrewPreset.iceGrams` に付与
+- HomeScreen の計算結果は `iceGrams > 0` のとき「湯量」と「氷」を分けて表示
 
 ### 浸漬式ドリッパー（Clever / Switch）
 - **比率:** 豆:湯 = 1:15
@@ -201,8 +223,8 @@ type BrewPresetTemplate = {
     - メイン: `cumulativeAmount`（スケール目標）── スケールで確認すべき累計値
     - サブ: `+pourAmount`g（このステップ）── 2投目以降のみ表示
     - 次のステップ名と残り秒数
-  - 音: Web Audio API（`AudioContext`）による880Hzサイン波ビープ
-- **画面常時点灯:** タイマー実行中はスリープ抑制（モバイル）
+  - 音: 880Hzサイン波ビープ。Web は Web Audio API（`AudioContext`）で直接合成、ネイティブは expo-audio で動的生成した WAV を再生（`src/utils/sound.ts`）。ネイティブでは expo-haptics による触覚フィードバックも併発
+- **画面常時点灯:** タイマー実行中はスリープ抑制（expo-keep-awake、Web は wake lock 未対応時に握りつぶし）
 
 ---
 
@@ -226,15 +248,15 @@ type BrewPresetTemplate = {
    - 全ステップのリスト（完了/現在/未来を色分け）
    - アラームオーバーレイ（タップで解除）
 
-3. **PresetsScreen（プリセット管理）**
+3. **SettingScreen（プリセット管理・外観設定、`app/settings.tsx`）**
    - プリセット一覧
    - 追加 / 編集 / 削除 / 複製
-   - デフォルトプリセットは編集・削除ボタンを非表示
+   - デフォルトプリセットは複製のみ可（編集・削除ボタンは非表示）
+   - 外観（ライト / ダーク / 自動）の切替（ThemeToggle）
 
 ### デザイン方針
-- **カラーテーマ:** ダークモード（コーヒーブラウン × アンバー）
-- **フォント:** 数字は等幅（DM Mono等）、本文はシステムフォント
-- ライトモードも将来的に対応予定
+- **カラーテーマ:** テラコッタ基調のライト / ダーク 2セットを実装済み（`global.css` の CSS 変数＋NativeWind トークン、システム追従に対応）。詳細は `docs/THEME_DESIGN.md`
+- **フォント:** 数字は等幅（`MONO_FONT_FAMILY`: iOS=Courier New / その他=monospace）、本文はシステムフォント
 
 ---
 
@@ -268,12 +290,7 @@ type BrewPresetTemplate = {
 
 ## 開発の進め方
 
-1. **Phase 1 (Web MVP):** React + Vite でコア機能を実装
-   - デフォルト4プリセット
-   - タイマー機能（カウントアップ + アラーム）
-   - 湯量計算
-   - カスタムプリセット作成・保存（localStorage）
-
-2. **Phase 2:** UI/UXブラッシュアップ・テスト追加
-
-3. **Phase 3:** React Native（Expo）へ移植
+- [x] **Phase 1 (Web MVP):** React + Vite でコア機能をプロトタイプ（デフォルト4プリセット・タイマー・湯量計算・カスタムプリセット保存）
+- [x] **Phase 2:** Expo（React Native）へ移植。Expo Router + NativeWind + AsyncStorage で iOS / Android / Web を単一コードベース化。ライト/ダークテーマ・温度（ホット/アイス）オプションを追加
+- [ ] **Phase 3:** UI/UXブラッシュアップ・テスト追加・Web公開
+- [ ] **Phase 4:** Apple Watch / Wear OS 連携・クラウド同期（検討中）

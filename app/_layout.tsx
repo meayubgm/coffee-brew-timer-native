@@ -10,12 +10,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import '../global.css';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
+import { THEME_COLORS } from '../src/theme/colors';
 
 function ThemedStack() {
   const { resolved } = useTheme();
   // 左右余白（Web の max-width 制限時に見える帯）をテーマの枠色で塗る。
-  // contentStyle は className 不可のため global.css の coffee-border 実値を出し分ける。
-  const gutter = resolved === 'dark' ? '#34221c' : '#eddcd1';
+  // contentStyle は className 不可のため coffee-border 実値を出し分ける。
+  const gutter = THEME_COLORS[resolved].border;
   return (
     <>
       {/* 明るい背景→暗い文字 / 暗い背景→明るい文字 に反転 */}
