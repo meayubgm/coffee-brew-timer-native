@@ -2,8 +2,8 @@
 // 変更点:
 //  - <ThemeProvider> で全体を包む（システム追従＋手動切替＋永続化）
 //  - StatusBar の style を resolved（実適用テーマ）に連動
-//  - Stack の contentStyle のハードコード #0e0b08 を撤去
-//    （背景は各画面の bg-coffee-bg が描くので transparent で良い）
+//  - Stack の contentStyle 背景をテーマの coffee-border 色に連動
+//    （Web で max-width 制限時に見える左右余白の帯を枠色で塗る）
 
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -13,6 +13,9 @@ import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 
 function ThemedStack() {
   const { resolved } = useTheme();
+  // 左右余白（Web の max-width 制限時に見える帯）をテーマの枠色で塗る。
+  // contentStyle は className 不可のため global.css の coffee-border 実値を出し分ける。
+  const gutter = resolved === 'dark' ? '#34221c' : '#eddcd1';
   return (
     <>
       {/* 明るい背景→暗い文字 / 暗い背景→明るい文字 に反転 */}
@@ -20,7 +23,7 @@ function ThemedStack() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: 'transparent' },
+          contentStyle: { backgroundColor: gutter },
         }}
       />
     </>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Modal, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePresetStore } from '../src/stores/presetStore';
@@ -105,7 +105,7 @@ export default function SettingScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-coffee-bg">
+    <SafeAreaView className="flex-1 w-full bg-coffee-bg max-w-4xl mx-auto">
       {/* ヘッダー */}
       <View className="flex-row items-center px-6 pt-4 pb-3 gap-4">
         <TouchableOpacity onPress={() => router.back()}>
@@ -180,9 +180,18 @@ export default function SettingScreen() {
       </ScrollView>
 
       {/* 編集モーダル */}
-      <Modal visible={!!editing} animationType="slide" presentationStyle="pageSheet">
+      {/* Web は pageSheet だとシート外側に react-native-web 既定の白背景が残るため、
+          フルスクリーン＋透過にして自前のテーマ色ラッパー（gutter=coffee-border）で全面を覆う。
+          ネイティブは従来どおり pageSheet を維持。 */}
+      <Modal
+        visible={!!editing}
+        animationType="slide"
+        presentationStyle={Platform.OS === 'web' ? 'overFullScreen' : 'pageSheet'}
+        transparent={Platform.OS === 'web'}
+      >
         {editing && (
-          <SafeAreaView className="flex-1 bg-coffee-bg">
+          <View className="flex-1 bg-coffee-border">
+            <SafeAreaView className="flex-1 w-full bg-coffee-bg max-w-4xl mx-auto">
             <View className="flex-row items-center px-6 pt-4 pb-3 gap-4">
               <TouchableOpacity onPress={() => setEditing(null)}>
                 <Text className="text-coffee-muted">キャンセル</Text>
@@ -300,6 +309,7 @@ export default function SettingScreen() {
               </View>
             </ScrollView>
           </SafeAreaView>
+          </View>
         )}
       </Modal>
     </SafeAreaView>

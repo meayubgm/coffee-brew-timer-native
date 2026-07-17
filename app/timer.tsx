@@ -49,7 +49,7 @@ export default function TimerScreen() {
   const stepPct = Math.min((stepElapsed / Math.max(stepDuration, 1)) * 100, 100);
 
   return (
-    <SafeAreaView className="flex-1 bg-coffee-bg">
+    <SafeAreaView className="flex-1 w-full bg-coffee-bg max-w-4xl mx-auto">
       {/* ヘッダー */}
       <View className="flex-row items-center px-6 pt-4 pb-3 gap-4">
         <TouchableOpacity onPress={handleReset}>
@@ -217,7 +217,7 @@ export default function TimerScreen() {
           onPress={dismissAlarm}
         >
           <View pointerEvents="none">
-            <View className="bg-coffee-surface border border-coffee-accent rounded-2xl p-8 w-full items-center">
+            <View className="bg-coffee-surface border border-coffee-accent rounded-2xl p-8 w-full min-w-[16rem] items-center">
               <Text className="text-5xl mb-4">🔔</Text>
               <Text className="text-2xl font-bold text-coffee-accent mb-1">{alarm?.step.label}</Text>
               {alarm?.step.instruction && (

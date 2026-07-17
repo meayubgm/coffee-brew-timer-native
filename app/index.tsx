@@ -37,7 +37,7 @@ export default function HomeScreen() {
   const hotWater = totalWater - iceGrams;
 
   return (
-    <SafeAreaView className="flex-1 bg-coffee-bg">
+    <SafeAreaView className="flex-1 w-full bg-coffee-bg max-w-4xl mx-auto">
       {/* ヘッダー */}
       <View className="flex-row items-center justify-between px-6 pt-4 pb-3">
         <Text className="text-2xl font-bold text-coffee-accent">☕ Coffee Timer</Text>
