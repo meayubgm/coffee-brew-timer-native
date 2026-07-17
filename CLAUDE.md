@@ -64,66 +64,16 @@ src/
 
 ## データ型定義
 
-```typescript
-// 1ステップの定義（実行時・カスタムプリセット保存用）
-type BrewStep = {
-  id: string;
-  label: string;          // 例: "1投目 (酸味調整)"
-  startTime: number;      // 秒
-  endTime: number;        // 秒
-  pourAmount: number;     // このステップで注ぐ量 (g)
-  cumulativeAmount: number; // 累計注湯量 (g) ── UI上の「スケール目標」として表示
-  instruction?: string;   // 追加ガイドテキスト
-};
+> **型の正（source of truth）は [`src/types/preset.ts`](src/types/preset.ts)。** フィールドの追加・変更はそちらで行い（`tsc --noEmit` で担保）、以下は各型の役割・設計意図の解説に留める。フィールドの網羅的な一覧は必ず `preset.ts` を参照すること。
 
-// プリセット定義（実行時・カスタムプリセット保存用）
-type BrewPreset = {
-  id: string;
-  name: string;
-  ratio: number;          // 湯量倍率 例: 15 (豆1gに対し15g)
-  steps: BrewStep[];
-  isDefault: boolean;     // trueの場合は編集不可
-  memo?: string;
-};
+各型の役割：
 
-// ステップテンプレート（デフォルトプリセット定義用。豆量に依存しない割合で保持）
-type BrewStepTemplate = {
-  id: string;
-  label: string;
-  startTime: number;      // 秒
-  endTime: number;        // 秒
-  pourRatio: number;      // 総湯量に対する割合（0〜1）。注湯なしのステップは 0
-  instruction?: string;
-  multiPourCount?: number; // 複数回に分けて注ぐ回数。指定時は各注湯の累計目標をinstructionに付加
-};
-
-// プリセットオプション（同一プリセット内でステップ設定を切り替える）
-type BrewPresetOption = {
-  id: string;
-  label: string;                                        // 例: "普通", "軽め"
-  stepOverrides: Record<string, Partial<BrewStepTemplate>>;  // stepId → 上書き内容
-};
-
-// オプショングループ（独立して選択できる軸、例: 風味バランス / ボディ）
-type BrewPresetOptionGroup = {
-  id: string;
-  label: string;       // 例: "風味バランス", "ボディ"
-  description?: string; // 例: "1投目の湯量が変わります"
-  defaultOptionId: string;
-  options: BrewPresetOption[];
-};
-
-// プリセットテンプレート（デフォルトプリセット定義用）
-type BrewPresetTemplate = {
-  id: string;
-  name: string;
-  ratio: number;
-  stepTemplates: BrewStepTemplate[];
-  isDefault: boolean;
-  memo?: string;
-  optionGroups?: BrewPresetOptionGroup[];
-};
-```
+- **`BrewStep`** — 1ステップの定義（実行時・カスタムプリセット保存用）。`cumulativeAmount` は累計注湯量で、UI上は「スケール目標」（スケールで確認すべき累計値）として表示する。`pourAmount` はそのステップで注ぐ量。
+- **`BrewPreset`** — プリセット定義（実行時・カスタムプリセット保存用）。`ratio` は湯量倍率（例: 15 = 豆1gに対し15g）、`isDefault: true` は編集不可。アイス時は氷量 `iceGrams`（g）を持つ（0 / undefined はホット）。
+- **`BrewStepTemplate`** — デフォルトプリセット定義用のステップテンプレート。豆量に依存しない割合で保持し、`pourRatio` は総湯量に対する割合（0〜1、注湯なしのステップは 0）。`multiPourCount` は複数回に分けて注ぐ回数で、指定時は各注湯の累計目標を `instruction` に付加する。
+- **`BrewPresetOption`** — 同一プリセット内でステップ設定を切り替えるオプション。`stepOverrides` は `stepId → 上書き内容`（`Partial<BrewStepTemplate>`）。温度オプションでは `hotWaterRatio`（総湯量に対するお湯の割合、0〜1。アイスは 0.5、未指定は 1）を持つ。
+- **`BrewPresetOptionGroup`** — 独立して選択できる軸（例: 風味バランス / ボディ / 温度）。`defaultOptionId` と `options` を持つ。
+- **`BrewPresetTemplate`** — デフォルトプリセット定義用のプリセットテンプレート。`stepTemplates` と、任意で `optionGroups` を持つ。
 
 > **実装メモ:** デフォルトプリセットは `BrewPresetTemplate` として定数定義し、`buildPresetFromTemplate(template, beansGrams, selectedGroupOptionIds?)` で全グループのオーバーライドをマージして `BrewPreset` に変換する。`selectedGroupOptionIds` は `Record<groupId, optionId>`。カスタムプリセットは `BrewPreset`（固定g数）として AsyncStorage に保存する。
 
