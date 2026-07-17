@@ -37,6 +37,7 @@ export default function SettingScreen() {
 
   const [editing, setEditing] = useState<EditingPreset | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function openNew() {
     setIsCreating(true);
@@ -68,11 +69,15 @@ export default function SettingScreen() {
     });
   }
 
+  // react-native-web の Alert.alert はボタン配列/onPress を無視するため、
+  // Web/ネイティブ共通で自前のテーマ付き確認 Modal を使う。
   function confirmDelete(id: string) {
-    Alert.alert('削除確認', 'このプリセットを削除しますか？', [
-      { text: 'キャンセル', style: 'cancel' },
-      { text: '削除', style: 'destructive', onPress: () => deleteCustomPreset(id) },
-    ]);
+    setDeletingId(id);
+  }
+
+  function executeDelete() {
+    if (deletingId) deleteCustomPreset(deletingId);
+    setDeletingId(null);
   }
 
   function handleSave() {
@@ -319,6 +324,32 @@ export default function SettingScreen() {
           </SafeAreaView>
           </View>
         )}
+      </Modal>
+
+      {/* 削除確認モーダル（Web/ネイティブ共通の自前ダイアログ） */}
+      <Modal visible={!!deletingId} animationType="fade" transparent>
+        <TouchableOpacity
+          className="flex-1 items-center justify-center bg-black/40 px-8"
+          activeOpacity={1}
+          onPress={() => setDeletingId(null)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {}}
+            className="w-full max-w-sm bg-coffee-surface border border-coffee-border rounded-2xl p-5"
+          >
+            <Text className="text-base font-medium text-coffee-text mb-2">削除確認</Text>
+            <Text className="text-sm text-coffee-muted mb-5">このプリセットを削除しますか？</Text>
+            <View className="flex-row justify-end gap-3">
+              <TouchableOpacity onPress={() => setDeletingId(null)} className="px-4 py-2">
+                <Text className="text-sm text-coffee-muted">キャンセル</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={executeDelete} className="border border-red-400/30 rounded-lg px-4 py-2">
+                <Text className="text-sm text-red-400 font-medium">削除</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </SafeAreaView>
   );
