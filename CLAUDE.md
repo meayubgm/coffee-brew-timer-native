@@ -28,6 +28,8 @@ Claude Codeはセッション開始時にこのファイルを参照してくだ
 | テーマ管理 | React Context（light / dark / system、AsyncStorage 永続化） |
 
 > テストランナーは未導入（旧仕様の Vitest は使用していない）。型安全性は `tsc --noEmit` で担保。
+>
+> **ブラウザ動作確認は Playwright MCP（`mcp__playwright__*`）を優先して使用する。** `npx expo start`（Web=`localhost:8081`）で起動し、`browser_navigate` → `browser_snapshot`（アクセシビリティスナップショット）で要素を特定し、`browser_click` / `browser_type` で操作、`browser_console_messages` でエラー確認を行う。ツールスキーマは遅延ロードのため、呼び出し前に ToolSearch で一括ロードすること。
 
 ---
 

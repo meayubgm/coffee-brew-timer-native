@@ -14,5 +14,9 @@ expo-env.d.ts
 # Web版のビルド成果物（expo export で自動生成）
 /dist/
 
+# Playwright MCP の動作確認成果物（スナップショット・スクリーンショット）
+.playwright-mcp/
+/timer-screen-playwright.png
+
 # macOSのフォルダ設定ファイル
 .DS_Store
