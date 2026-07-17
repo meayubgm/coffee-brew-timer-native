@@ -11,5 +11,8 @@ expo-env.d.ts
 # Expoのローカルキャッシュ（マシン固有・自動生成）
 .expo/
 
+# Web版のビルド成果物（expo export で自動生成）
+/dist/
+
 # macOSのフォルダ設定ファイル
 .DS_Store

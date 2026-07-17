@@ -7,6 +7,7 @@ import { BrewPreset, BrewStep } from '../src/types/preset';
 import { ThemeToggle } from '../src/components/ThemeToggle';
 import { useTheme } from '../src/theme/ThemeContext';
 import { THEME_COLORS, SCREEN_CONTAINER } from '../src/theme/colors';
+import { Card, Field } from '../src/components/ui';
 
 // カスタムプリセットは固定g数で保存する。割合→g換算の基準となる豆量（g）
 const CUSTOM_PRESET_BASE_BEANS = 20;
@@ -135,7 +136,7 @@ export default function SettingScreen() {
         <Text className="text-xs uppercase tracking-widest text-coffee-muted mb-3">デフォルト</Text>
         <View className="gap-2 mb-6">
           {defaultTemplates.map((tmpl) => (
-            <View key={tmpl.id} className="bg-coffee-surface border border-coffee-border rounded-xl px-4 py-3 flex-row items-center gap-3">
+            <Card key={tmpl.id} className="px-4 py-3 flex-row items-center gap-3">
               <View className="flex-1">
                 <Text className="font-medium text-coffee-text">{tmpl.name}</Text>
                 <Text className="text-xs text-coffee-muted mt-0.5">1:{tmpl.ratio} · {tmpl.stepTemplates.length}ステップ</Text>
@@ -147,7 +148,7 @@ export default function SettingScreen() {
               >
                 <Text className="text-xs text-coffee-accent">複製</Text>
               </TouchableOpacity>
-            </View>
+            </Card>
           ))}
         </View>
 
@@ -164,7 +165,7 @@ export default function SettingScreen() {
         ) : (
           <View className="gap-2 mb-6">
             {customPresets.map((preset) => (
-              <View key={preset.id} className="bg-coffee-surface border border-coffee-border rounded-xl px-4 py-3 flex-row items-center gap-3">
+              <Card key={preset.id} className="px-4 py-3 flex-row items-center gap-3">
                 <View className="flex-1">
                   <Text className="font-medium text-coffee-text">{preset.name}</Text>
                   <Text className="text-xs text-coffee-muted mt-0.5">1:{preset.ratio} · {preset.steps.length}ステップ</Text>
@@ -180,7 +181,7 @@ export default function SettingScreen() {
                     <Text className="text-xs text-red-400">削除</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </Card>
             ))}
           </View>
         )}
@@ -219,7 +220,7 @@ export default function SettingScreen() {
 
             <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
               {/* 基本情報 */}
-              <View className="bg-coffee-surface border border-coffee-border rounded-xl p-4 gap-3 mb-5">
+              <Card className="p-4 gap-3 mb-5">
                 <Field label="プリセット名">
                   <TextInput
                     value={editing.name}
@@ -248,7 +249,7 @@ export default function SettingScreen() {
                     placeholder="豆の種類・挽き目など"
                   />
                 </Field>
-              </View>
+              </Card>
 
               {/* ステップ */}
               <View className="flex-row items-center justify-between mb-3">
@@ -259,7 +260,7 @@ export default function SettingScreen() {
               </View>
               <View className="gap-3 mb-6">
                 {editing.steps.map((step, i) => (
-                  <View key={step.id} className="bg-coffee-surface border border-coffee-border rounded-xl p-4 gap-3">
+                  <Card key={step.id} className="p-4 gap-3">
                     <View className="flex-row items-center justify-between">
                       <Text className="text-xs text-coffee-muted">ステップ {i + 1}</Text>
                       {editing.steps.length > 1 && (
@@ -317,7 +318,7 @@ export default function SettingScreen() {
                         placeholder="例: ゆっくり円を描くように注ぐ"
                       />
                     </View>
-                  </View>
+                  </Card>
                 ))}
               </View>
             </ScrollView>
@@ -352,14 +353,5 @@ export default function SettingScreen() {
         </TouchableOpacity>
       </Modal>
     </SafeAreaView>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <View>
-      <Text className="text-xs text-coffee-muted mb-1">{label}</Text>
-      {children}
-    </View>
   );
 }

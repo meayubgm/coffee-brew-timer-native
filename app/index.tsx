@@ -1,16 +1,11 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePresetStore } from '../src/stores/presetStore';
 import { calcTotalWater } from '../src/utils/waterCalc';
-import { fmtTime, MONO_FONT_FAMILY } from '../src/utils/format';
+import { fmtTime } from '../src/utils/format';
 import { SCREEN_CONTAINER } from '../src/theme/colors';
+import { Section, SegmentedControl, Stepper, SummaryItem } from '../src/components/ui';
 
 export default function HomeScreen() {
   const {
@@ -80,19 +75,14 @@ export default function HomeScreen() {
         <Section label="設定">
           <View className="bg-coffee-surface border border-coffee-border rounded-xl p-4 gap-4">
             {/* 入力モード切替 */}
-            <View className="flex-row rounded-lg overflow-hidden border border-coffee-border">
-              {(['beans', 'servings'] as const).map((mode) => (
-                <TouchableOpacity
-                  key={mode}
-                  onPress={() => setInputMode(mode)}
-                  className={`flex-1 py-2 items-center ${inputMode === mode ? 'bg-coffee-accent' : 'bg-transparent'}`}
-                >
-                  <Text className={`text-sm ${inputMode === mode ? 'text-coffee-on-accent font-medium' : 'text-coffee-muted'}`}>
-                    {mode === 'beans' ? '豆量で指定' : '人数で指定'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <SegmentedControl
+              options={[
+                { value: 'beans', label: '豆量で指定' },
+                { value: 'servings', label: '人数で指定' },
+              ]}
+              value={inputMode}
+              onChange={setInputMode}
+            />
 
             {/* 数値入力 */}
             {inputMode === 'beans' ? (
@@ -100,7 +90,6 @@ export default function HomeScreen() {
                 label="豆量"
                 value={beansGrams}
                 unit="g"
-                step={5}
                 onDecrement={() => setBeansGrams(Math.max(5, beansGrams - 5))}
                 onIncrement={() => setBeansGrams(beansGrams + 5)}
                 onChangeText={(v) => setBeansGrams(Math.max(5, Number(v) || 5))}
@@ -110,7 +99,6 @@ export default function HomeScreen() {
                 label="人数"
                 value={servings}
                 unit="人"
-                step={1}
                 onDecrement={() => setServings(Math.max(1, servings - 1))}
                 onIncrement={() => setServings(servings + 1)}
                 onChangeText={(v) => setServings(Math.max(1, Number(v) || 1))}
@@ -148,25 +136,11 @@ export default function HomeScreen() {
                           <Text className="text-xs text-coffee-muted mt-0.5">{group.description}</Text>
                         )}
                       </View>
-                      <View className="flex-row rounded-lg overflow-hidden border border-coffee-border">
-                        {group.options.map((opt) => (
-                          <TouchableOpacity
-                            key={opt.id}
-                            onPress={() => setOptionForPreset(selectedTemplateId, group.id, opt.id)}
-                            className={`flex-1 py-2 items-center ${
-                              currentOptionId === opt.id ? 'bg-coffee-accent' : 'bg-transparent'
-                            }`}
-                          >
-                            <Text
-                              className={`text-sm ${
-                                currentOptionId === opt.id ? 'text-coffee-on-accent font-medium' : 'text-coffee-muted'
-                              }`}
-                            >
-                              {opt.label}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
+                      <SegmentedControl
+                        options={group.options.map((opt) => ({ value: opt.id, label: opt.label }))}
+                        value={currentOptionId}
+                        onChange={(optId) => setOptionForPreset(selectedTemplateId, group.id, optId)}
+                      />
                     </View>
                   );
                 })}
@@ -213,83 +187,5 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
     </SafeAreaView>
-  );
-}
-
-// ── 小コンポーネント ────────────────────────────────────────
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <View className="mb-6">
-      <Text className="text-xs uppercase tracking-widest text-coffee-muted mb-3">{label}</Text>
-      {children}
-    </View>
-  );
-}
-
-function SummaryItem({
-  value,
-  label,
-  accent,
-  color,
-}: {
-  value: string;
-  label: string;
-  accent?: boolean;
-  color?: string;
-}) {
-  return (
-    <View className="items-center">
-      <Text className={`text-2xl font-mono font-medium ${color ?? (accent ? 'text-coffee-accent' : 'text-coffee-text')}`}>
-        {value}
-      </Text>
-      <Text className="text-xs text-coffee-muted mt-1">{label}</Text>
-    </View>
-  );
-}
-
-function Stepper({
-  label,
-  value,
-  unit,
-  step: _step,
-  onDecrement,
-  onIncrement,
-  onChangeText,
-}: {
-  label: string;
-  value: number;
-  unit: string;
-  step: number;
-  onDecrement: () => void;
-  onIncrement: () => void;
-  onChangeText: (v: string) => void;
-}) {
-  return (
-    <View className="flex-row items-center gap-3">
-      <Text className="text-sm text-coffee-muted w-12">{label}</Text>
-      <View className="flex-1 flex-row items-center gap-2">
-        <TouchableOpacity
-          onPress={onDecrement}
-          className="w-9 h-9 rounded-lg bg-coffee-border items-center justify-center"
-        >
-          <Text className="text-coffee-text text-xl">−</Text>
-        </TouchableOpacity>
-        <TextInput
-          value={String(value)}
-          onChangeText={onChangeText}
-          keyboardType="numeric"
-          style={{ fontFamily: MONO_FONT_FAMILY, minWidth: 0 }}
-          className="flex-1 bg-coffee-bg border border-coffee-border rounded-lg px-3 py-2 text-center text-lg text-coffee-text"
-        />
-        <TouchableOpacity
-          onPress={onIncrement}
-          className="w-9 h-9 rounded-lg bg-coffee-border items-center justify-center"
-        >
-          <Text className="text-coffee-text text-xl">＋</Text>
-        </TouchableOpacity>
-        <Text className="text-sm text-coffee-muted">{unit}</Text>
-      </View>
-    </View>
   );
 }

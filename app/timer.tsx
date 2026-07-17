@@ -91,7 +91,7 @@ export default function TimerScreen() {
 
         {/* 現在のステップ */}
         {currentStep && !isFinished && (
-          <View className="bg-coffee-surface border border-coffee-accent/30 rounded-xl p-5 mb-4">
+          <View className="bg-coffee-surface border border-coffee-accent rounded-xl p-5 mb-4">
             <View className="flex-row items-start justify-between gap-4">
               <View className="flex-1">
                 <Text className="text-xs uppercase tracking-widest text-coffee-accent mb-1">
